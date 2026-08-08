@@ -1,0 +1,285 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 142.1 76.2% 36.3%;
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 222.2 47.4% 11.2%;
+    --sidebar-primary: 142.1 76.2% 36.3%;
+    --sidebar-primary-foreground: 355.7 100% 97.3%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 222.2 47.4% 11.2%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 142.1 76.2% 36.3%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 142.1 70.6% 45.3%;
+    --primary-foreground: 144.9 80.4% 10%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 142.4 71.8% 29.2%;
+
+    --sidebar-background: 222.2 84% 4.9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 142.1 70.6% 45.3%;
+    --sidebar-primary-foreground: 144.9 80.4% 10%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 142.4 71.8% 29.2%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-noto-serif-bengali), sans-serif !important;
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    min-height: 100vh;
+  }
+  input,
+  button,
+  textarea,
+  select {
+    font-family: var(--font-noto-serif-bengali), sans-serif !important;
+  }
+}
+
+/* Modern card styles */
+.modern-card {
+  @apply bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300;
+}
+
+.modern-gradient {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary)) 100%);
+}
+
+.glass-effect {
+  @apply bg-white/10 backdrop-blur-md border border-white/20;
+}
+
+/* Glow effects */
+.glow-text {
+  text-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
+}
+
+.glow-box {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+}
+
+.glow-red {
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+}
+
+/* Anti-copy styles */
+.no-copy {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.option-circle {
+  @apply flex items-center gap-2;
+}
+
+.option-circle::before {
+  content: "";
+  @apply w-6 h-6 rounded-full border border-border flex-shrink-0 flex items-center justify-center;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.option-circle.selected::before {
+  @apply bg-primary border-primary text-primary-foreground;
+  content: attr(data-option);
+}
+
+.option-circle.selected.correct::before {
+  @apply bg-emerald-500 border-emerald-500;
+}
+
+.option-circle.selected.incorrect::before {
+  @apply bg-red-500 border-red-500;
+}
+
+/* Modern animations */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float-animation {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Mobile bottom navigation adjustments */
+@media (max-width: 768px) {
+  .has-mobile-nav {
+    padding-bottom: 5rem;
+  }
+
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Maintenance mode styles */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.blur-sm {
+  filter: blur(4px);
+}
+
+/* Modern scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.8);
+}
+
+/* Responsive padding adjustments */
+.responsive-container {
+  @apply px-4 md:px-6 lg:px-8;
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .hide-on-mobile {
+    display: none;
+  }
+
+  .mobile-full-width {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+
+  .mobile-center {
+    text-align: center !important;
+    justify-content: center !important;
+  }
+
+  .mobile-p-4 {
+    padding: 1rem !important;
+  }
+
+  .mobile-text-sm {
+    font-size: 0.875rem !important;
+    line-height: 1.25rem !important;
+  }
+}
+
+/* Remove any potential v0 branding or watermarks */
+[data-v0-t],
+.v0-watermark,
+.v0-branding,
+[class*="v0-"],
+[id*="v0-"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+}
+
+/* Hide any fixed positioned elements that might be v0 branding */
+div[style*="position: fixed"][style*="bottom"][style*="right"] {
+  display: none !important;
+}
+
+/* Additional safety to hide any potential overlay branding */
+.fixed.bottom-0.right-0,
+.fixed.bottom-4.right-4,
+.absolute.bottom-0.right-0,
+.absolute.bottom-4.right-4 {
+  display: none !important;
+}
+
+/* Ensure no v0 attribution appears */
+*[title*="v0"],
+*[alt*="v0"],
+*[data-testid*="v0"] {
+  display: none !important;
+}
+
+/* Mobile navigation specific styles */
+.mobile-nav-item {
+  transition: all 0.2s ease-in-out;
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.95);
+}
+
+.mobile-nav-item.active {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--primary) / 0.05) 100%);
+  border-radius: 0.5rem;
+}
