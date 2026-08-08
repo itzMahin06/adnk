@@ -151,11 +151,7 @@ export default function LoginPage() {
                 রেজিস্ট্রেশন করুন
               </Link>
             </div>
-            <div className="text-sm text-muted-foreground text-center">
-              <Link href="/admin-login" className="underline">
-                অ্যাডমিন লগইন
-              </Link>
-            </div>
+         
           </CardFooter>
         </Card>
       </main>
