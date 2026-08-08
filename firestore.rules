@@ -1,0 +1,144 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return request.auth.token.email == "contact.mahin728@gmail.com" || 
+             request.auth.token.email == "info.itzmahin@gmail.com";
+    }
+    
+    function isApprovedStudent() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/students/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/students/$(request.auth.uid)).data.approved == true;
+    }
+    
+    function isCurrentUser(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function hasNotParticipated(examId) {
+      // Check if the student has already participated in this exam
+      return !exists(/databases/$(database)/documents/results/$(request.auth.uid + '_' + examId));
+    }
+    
+    function hasAccessToCourse(courseId) {
+      // Check if the student has access to this course through purchase
+      return get(/databases/$(database)/documents/students/$(request.auth.uid)).data.courses.hasAny([courseId]);
+    }
+    
+    function hasPurchasedCourse(courseId) {
+      // Check if the student has purchased and been approved for this course
+      return exists(/databases/$(database)/documents/purchases/$(request.auth.uid + '_' + courseId)) &&
+             get(/databases/$(database)/documents/purchases/$(request.auth.uid + '_' + courseId)).data.status == 'approved';
+    }
+
+    function hasAnyCourseAccess(courseId) {
+      return hasPurchasedCourse(courseId) || hasAccessToCourse(courseId);
+    }
+    
+    // Students collection
+    match /students/{studentId} {
+      // Admin can read and write all student documents
+      // Students can read and update their own documents
+      allow read: if isAdmin() || isCurrentUser(studentId);
+      // Allow students to read other students' basic info for leaderboard
+      allow read: if isApprovedStudent();
+      // Anyone can create account (removed approval requirement)
+      allow create: if isAuthenticated();
+      allow update: if isAdmin() || (isCurrentUser(studentId) && 
+                                    request.resource.data.diff(resource.data).affectedKeys()
+                                    .hasOnly(['paidBatch', 'courses']));
+      allow delete: if isAdmin();
+    }
+    
+    // Courses collection - Allow public read for course marketplace
+    match /courses/{courseId} {
+      allow read: if true; // Allow anyone to read courses for marketplace
+      allow write, delete: if isAdmin();
+    }
+    
+    // Purchases collection
+    match /purchases/{purchaseId} {
+      // Admin can read all purchases
+      // Students can read their own purchases
+      allow read: if isAdmin() || 
+                 (isAuthenticated() && resource.data.studentId == request.auth.uid);
+      // Students can create their own purchase requests
+      allow create: if isAuthenticated() && 
+                    request.resource.data.studentId == request.auth.uid;
+      // Only admin can update purchase status
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Exams collection - Restrict access based on course enrollment
+    match /exams/{examId} {
+      // Admin can read, write, and delete exams
+      allow read, write, delete: if isAdmin();
+      // Students can only read exams for courses they have purchased or are assigned to
+      allow read: if isAuthenticated() && 
+                 (resource.data.courseId == "" || 
+                  resource.data.courseId == null ||
+                  hasAnyCourseAccess(resource.data.courseId));
+    }
+    
+    // Questions collection - Restrict access based on exam access
+    match /questions/{questionId} {
+      // Admin can read, write, and delete questions
+      allow read, write, delete: if isAdmin();
+      // Students can only read questions for exams they have access to
+      allow read: if isAuthenticated() && 
+                 exists(/databases/$(database)/documents/exams/$(resource.data.examId)) &&
+                 (get(/databases/$(database)/documents/exams/$(resource.data.examId)).data.courseId == "" ||
+                  get(/databases/$(database)/documents/exams/$(resource.data.examId)).data.courseId == null ||
+                  hasAnyCourseAccess(get(/databases/$(database)/documents/exams/$(resource.data.examId)).data.courseId));
+    }
+    
+    // Results collection - Enhanced for completion time tracking
+    match /results/{resultId} {
+      // Admin can read all results
+      // Students can read their own results
+      // Students can read results with leaderboardPublished=true for progress comparison
+      allow read: if isAdmin() || 
+                 (isAuthenticated() && resource.data.studentId == request.auth.uid) ||
+                 (isAuthenticated() && resource.data.leaderboardPublished == true);
+      // Students can create results only for exams they have access to
+      allow create: if isAuthenticated() && 
+                request.resource.data.studentId == request.auth.uid && 
+                hasNotParticipated(request.resource.data.examId) &&
+                exists(/databases/$(database)/documents/exams/$(request.resource.data.examId)) &&
+                (get(/databases/$(database)/documents/exams/$(request.resource.data.examId)).data.courseId == "" ||
+                 get(/databases/$(database)/documents/exams/$(request.resource.data.examId)).data.courseId == null ||
+                 hasAnyCourseAccess(get(/databases/$(database)/documents/exams/$(request.resource.data.examId)).data.courseId)) &&
+                // Ensure completionTimeSeconds is included and valid
+                request.resource.data.keys().hasAll(['completionTimeSeconds']) &&
+                request.resource.data.completionTimeSeconds is number &&
+                request.resource.data.completionTimeSeconds >= 0;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Notices collection - Allow public read access
+    match /notices/{noticeId} {
+      allow read: if true; // Allow anyone to read notices
+      allow write, delete: if isAdmin();
+    }
+    
+    // Settings collection - Allow public read access for maintenance settings
+    match /settings/maintenance {
+      allow read: if true; // Allow anyone to read maintenance settings
+      allow write, delete: if isAdmin();
+    }
+    
+    // Other settings documents
+    match /settings/{settingId} {
+      allow read: if isAdmin() || isAuthenticated();
+      allow write, delete: if isAdmin();
+    }
+  }
+}
